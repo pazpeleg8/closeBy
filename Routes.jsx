@@ -1,7 +1,7 @@
 /* global React, Icon, scoreColor */
 
 // ----- Routes comparison sheet --------------------------------------------
-function RoutesSheet({ destination, onStart, onBack }) {
+function RoutesSheet({ destination, onStart, onBack, companionOn, onToggleCompanion }) {
   const routes = [
     { id: "a", title: "Via Broadway & 14th", meta: "14 min · lit, active", score: 82, tags: ["Main roads", "Well-lit"], selected: true },
     { id: "b", title: "Via University Pl", meta: "11 min · quieter after 9", score: 54, tags: ["3 min faster", "Quieter blocks"], selected: false },
@@ -51,8 +51,40 @@ function RoutesSheet({ destination, onStart, onBack }) {
         })}
       </div>
 
+      {/* Companion toggle */}
+      <div style={{
+        marginTop: 14, padding: "12px 14px", borderRadius: 14,
+        background: companionOn ? "rgba(232,155,108,0.14)" : "rgba(14,22,32,0.45)",
+        border: companionOn ? "1px solid rgba(232,155,108,0.35)" : "1px solid rgba(245,239,230,0.08)",
+        display: "flex", alignItems: "center", gap: 12,
+        transition: "background 250ms, border-color 250ms"
+      }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 999, flexShrink: 0,
+          background: companionOn ? "rgba(232,155,108,0.2)" : "rgba(245,239,230,0.07)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: companionOn ? "#E89B6C" : "#8593A6"
+        }}>
+          <Icon.Phone size={16}/>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#F5EFE6" }}>
+            {companionOn ? "Companion on" : "AI companion call"}
+          </div>
+          <div style={{ fontSize: 11, color: "#8593A6", marginTop: 1 }}>
+            {companionOn ? "Active during your walk · alerts Maya & Sara if silent" : "Simulates a call. Alerts friends if you go silent."}
+          </div>
+        </div>
+        <button onClick={onToggleCompanion} style={{
+          padding: "7px 13px", borderRadius: 999, border: "none", cursor: "pointer",
+          background: companionOn ? "#E89B6C" : "rgba(245,239,230,0.1)",
+          color: companionOn ? "#0E1620" : "#F5EFE6",
+          fontFamily: "Inter Tight", fontSize: 12, fontWeight: 700, flexShrink: 0
+        }}>{companionOn ? "On" : "Start"}</button>
+      </div>
+
       <button onClick={() => onStart(chosen)} style={{
-        marginTop: 18, width: "100%", padding: "16px 24px", borderRadius: 999,
+        marginTop: 12, width: "100%", padding: "16px 24px", borderRadius: 999,
         background: "#E89B6C", color: "#0E1620", border: "none", cursor: "pointer",
         fontFamily: "Inter Tight", fontSize: 16, fontWeight: 600,
         display: "flex", alignItems: "center", justifyContent: "center", gap: 8

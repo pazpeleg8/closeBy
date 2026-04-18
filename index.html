@@ -40,9 +40,9 @@
 
   .logo {
     display: block;
-    height: 28px;
+    height: 48px;
     width: auto;
-    margin-bottom: 48px;
+    margin-bottom: 44px;
   }
 
   .eyebrow {
@@ -221,8 +221,12 @@
     }
   }
 
-  /* ── Keyframes used by Walking.jsx ── */
-  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+  /* ── Keyframes ── */
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+  /* Voice waveform bars in CompanionActive */
+  @keyframes waveA { 0%,100%{height:4px} 50%{height:16px} }
+  @keyframes waveB { 0%,100%{height:8px} 50%{height:4px}  }
+  @keyframes waveC { 0%,100%{height:4px} 50%{height:12px} }
 </style>
 </head>
 <body>
@@ -318,15 +322,33 @@
       });
     }, [screen]);
 
-    // We re-implement App inline so we can intercept setScreen
     const [dest, setDest] = React.useState(null);
     const [route, setRoute] = React.useState(null);
     const [showReport, setShowReport] = React.useState(false);
     const [companionOn, setCompanionOn] = React.useState(false);
     const [arrived, setArrived] = React.useState(false);
+    const [walkProgress, setWalkProgress] = React.useState(0);
 
-    const go = (s) => { setScreen(s); };
-    const progress = screen === "walking" ? 0.35 : screen === "routes" ? 0.6 : 0;
+    const go = (s) => {
+      setScreen(s);
+      if (s === "walking") setWalkProgress(0);
+    };
+
+    // Auto-advance walkProgress when walking: 0 → 0.92 over ~38s, then loop
+    React.useEffect(() => {
+      if (screen !== "walking" || arrived) return;
+      const id = setInterval(() => {
+        setWalkProgress(p => {
+          if (p >= 0.92) { return 0.05; } // loop back to start
+          return p + (1 / 190); // ~38s at 200ms interval
+        });
+      }, 200);
+      return () => clearInterval(id);
+    }, [screen, arrived]);
+
+    const mapProgress = screen === "walking" ? walkProgress
+                      : screen === "routes"  ? 0
+                      : 0;
 
     // Mark arrive step when arrived
     React.useEffect(() => {
@@ -341,7 +363,7 @@
         <StatusBar theme="dark" time="9:24"/>
         <HomeIndicator theme="dark"/>
         <div style={{ position:"absolute", inset:0 }}>
-          <MapCanvas routeProgress={progress} showRoute={screen !== "home" && screen !== "search"}/>
+          <MapCanvas routeProgress={mapProgress} showRoute={screen !== "home" && screen !== "search"}/>
         </div>
         <TopFade/>
 
@@ -381,6 +403,8 @@
               destination={dest || "Union Square"}
               onBack={() => go("home")}
               onStart={(r) => { setRoute(r); go("walking"); }}
+              companionOn={companionOn}
+              onToggleCompanion={() => setCompanionOn(v => !v)}
             />
           </BottomSheet>
         )}
@@ -389,6 +413,7 @@
           <BottomSheet snap="half">
             <WalkingSheet
               route={route || { score: 82 }}
+              routeProgress={walkProgress}
               onReport={() => setShowReport(true)}
               onArrive={() => setArrived(true)}
               companionOn={companionOn}
