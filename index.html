@@ -120,9 +120,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0;
+    justify-content: flex-start;
     overflow: hidden;
+    padding-top: 20px;
+  }
+
+  .sim-header {
+    flex-shrink: 0;
+    text-align: center;
+    margin-bottom: 14px;
   }
 
   .simulator-inner {
@@ -131,6 +137,7 @@
     align-items: center;
     gap: 14px;
     transform-origin: top center;
+    flex-shrink: 0;
   }
 
   .simulator-label {
@@ -144,11 +151,11 @@
 
   .sim-headline {
     font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 400;
     letter-spacing: -0.01em;
     color: var(--ink);
-    margin: 0;
+    margin: 0 0 4px;
     font-variation-settings: "opsz" 72, "SOFT" 30;
   }
   .sim-hint {
@@ -157,8 +164,9 @@
     color: #8593A6;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
-    margin-top: 2px;
+    margin: 0;
   }
   .sim-hint svg { opacity: 0.7; }
 
@@ -215,6 +223,7 @@
     }
 
     .simulator-label,
+    .sim-header,
     .flow { display: none; }
 
     .simulator-inner {
@@ -287,14 +296,14 @@
 
   <!-- ── Phone simulator ── -->
   <div class="simulator">
+    <div class="sim-header">
+      <p class="sim-headline">Try the prototype</p>
+      <p class="sim-hint">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0v10"/><path d="M10 10.5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2V17a6 6 0 0 0 6 6h0a6 6 0 0 0 6-6v-5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2"/></svg>
+        Tap to explore the full flow
+      </p>
+    </div>
     <div class="simulator-inner">
-      <div style="text-align:center; margin-bottom:2px;">
-        <p class="sim-headline">Try the prototype</p>
-        <p class="sim-hint">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0v10"/><path d="M10 10.5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2V17a6 6 0 0 0 6 6h0a6 6 0 0 0 6-6v-5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2"/></svg>
-          Tap to explore the full flow
-        </p>
-      </div>
       <div id="root"></div>
       <nav class="flow" id="flow-nav" aria-label="App flow">
         <span class="flow-step active" id="step-home">Home</span>
@@ -484,15 +493,20 @@
   function fitPhone() {
     const sim = document.querySelector('.simulator');
     const inner = document.querySelector('.simulator-inner');
+    const header = document.querySelector('.sim-header');
     if (!sim || !inner || window.innerWidth <= 900) return;
-    inner.style.transform = '';
-    const available = sim.clientHeight - 48; // 24px breathing room top+bottom
+    inner.style.transform = 'none';
+    inner.style.marginTop = '';
+    inner.style.marginBottom = '';
+    const headerH = header ? header.offsetHeight + 14 : 0; // 14px = sim-header margin-bottom
+    const available = sim.clientHeight - headerH - 20; // 20px = simulator padding-top
     const natural = inner.scrollHeight;
     const scale = Math.min(1, available / natural);
     inner.style.transform = 'scale(' + scale + ')';
-    // Recenter: transform-origin top center leaves gap at bottom; shift up by half the saved space
-    const saved = (1 - scale) * natural;
-    inner.style.marginTop = '-' + Math.round(saved / 2) + 'px';
+    // Only negative bottom margin — top is never moved so nothing gets clipped
+    if (scale < 1) {
+      inner.style.marginBottom = '-' + Math.round((1 - scale) * natural) + 'px';
+    }
   }
   window.addEventListener('load', fitPhone);
   window.addEventListener('resize', fitPhone);
