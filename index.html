@@ -40,9 +40,9 @@
 
   .logo {
     display: block;
-    height: 48px;
+    height: 72px;
     width: auto;
-    margin-bottom: 44px;
+    margin-bottom: 32px;
   }
 
   .eyebrow {
@@ -141,6 +141,26 @@
     text-transform: uppercase;
     color: #8593A6;
   }
+
+  .sim-headline {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0;
+    font-variation-settings: "opsz" 72, "SOFT" 30;
+  }
+  .sim-hint {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: #8593A6;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+  }
+  .sim-hint svg { opacity: 0.7; }
 
   /* ── Flow guide ── */
   .flow {
@@ -268,7 +288,13 @@
   <!-- ── Phone simulator ── -->
   <div class="simulator">
     <div class="simulator-inner">
-      <div class="simulator-label">Try it</div>
+      <div style="text-align:center; margin-bottom:2px;">
+        <p class="sim-headline">Try the prototype</p>
+        <p class="sim-hint">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0v10"/><path d="M10 10.5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2V17a6 6 0 0 0 6 6h0a6 6 0 0 0 6-6v-5a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2"/></svg>
+          Tap to explore the full flow
+        </p>
+      </div>
       <div id="root"></div>
       <nav class="flow" id="flow-nav" aria-label="App flow">
         <span class="flow-step active" id="step-home">Home</span>
