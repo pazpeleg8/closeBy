@@ -9,110 +9,118 @@
   *, *::before, *::after { box-sizing: border-box; }
 
   html, body {
-    margin: 0; padding: 0; min-height: 100%;
+    margin: 0; padding: 0; height: 100%;
     background: var(--cream-2);
     color: var(--ink);
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Layout ── */
+  /* ── Desktop: two columns locked to viewport ── */
   .page {
     display: grid;
-    grid-template-columns: 1fr 480px;
-    min-height: 100vh;
-    align-items: start;
-    gap: 0;
+    grid-template-columns: 1fr 460px;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  /* ── Left: one-pager ── */
+  /* ── Left: brief scrolls inside its column ── */
   .brief {
-    padding: 64px 56px 64px 72px;
-    max-width: 640px;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 52px 56px 64px 64px;
+    max-width: 600px;
+    width: 100%;
     justify-self: end;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(14,22,32,0.15) transparent;
   }
+  .brief::-webkit-scrollbar { width: 4px; }
+  .brief::-webkit-scrollbar-thumb { background: rgba(14,22,32,0.15); border-radius: 2px; }
 
   .logo {
     display: block;
-    height: 32px;
+    height: 28px;
     width: auto;
-    margin-bottom: 56px;
+    margin-bottom: 48px;
   }
 
   .eyebrow {
     font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--apricot-deep);
-    margin: 0 0 10px;
+    margin: 0 0 8px;
   }
 
   .brief h2 {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: 26px;
+    font-size: 24px;
     letter-spacing: -0.02em;
-    line-height: 1.15;
+    line-height: 1.2;
     color: var(--ink);
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     font-variation-settings: "opsz" 72, "SOFT" 30;
   }
 
   .brief p {
     font-family: var(--font-ui);
-    font-size: 15px;
-    line-height: 1.65;
+    font-size: 14px;
+    line-height: 1.7;
     color: #3B475A;
-    margin: 0 0 40px;
+    margin: 0 0 32px;
   }
 
   .brief section + section {
-    padding-top: 32px;
-    border-top: 1px solid rgba(14,22,32,0.1);
+    padding-top: 28px;
+    margin-top: 4px;
+    border-top: 1px solid rgba(14,22,32,0.08);
   }
 
   .score-pill {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 14px 6px 8px;
+    gap: 7px;
+    padding: 5px 12px 5px 7px;
     border-radius: 999px;
     background: #D4E5DC;
     color: #2A5643;
     font-family: var(--font-ui);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     margin-bottom: 10px;
   }
   .score-pill .dot {
-    width: 8px; height: 8px; border-radius: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
     background: #4F8A72;
-    box-shadow: 0 0 0 3px rgba(79,138,114,0.25);
+    box-shadow: 0 0 0 3px rgba(79,138,114,0.2);
   }
   .score-pill .num {
     font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 17px;
     font-variation-settings: "opsz" 144, "SOFT" 50;
     line-height: 1;
   }
 
   .caption {
     font-family: var(--font-ui);
-    font-size: 12px;
+    font-size: 11px;
     color: #8593A6;
-    margin-top: 48px;
+    margin-top: 40px;
     letter-spacing: 0.02em;
   }
 
-  /* ── Right: phone simulator ── */
+  /* ── Right: simulator column ── */
   .simulator {
     background: var(--ink);
-    position: sticky;
-    top: 0;
     height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0;
     overflow: hidden;
   }
 
@@ -120,40 +128,101 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    /* Scale phone (844px tall) to fit viewport with 64px breathing room */
-    transform: scale(var(--phone-scale, 0.9));
+    gap: 14px;
     transform-origin: center center;
   }
 
+  /* Scale phone (844px) + label (20px) + gap (14px) + flow bar (44px) + gap (14px) ≈ 936px total
+     target: 100vh - 40px margin */
+  @media (max-height: 1000px) { .simulator-inner { transform: scale(0.92); } }
+  @media (max-height: 920px)  { .simulator-inner { transform: scale(0.84); } }
+  @media (max-height: 840px)  { .simulator-inner { transform: scale(0.76); } }
+  @media (max-height: 760px)  { .simulator-inner { transform: scale(0.68); } }
+  @media (max-height: 680px)  { .simulator-inner { transform: scale(0.60); } }
+
   .simulator-label {
     font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #5B6A80;
+    color: #3B475A;
   }
 
-  /* ── Responsive ── */
-  @media (max-height: 920px) { .simulator-inner { --phone-scale: 0.88; } }
-  @media (max-height: 840px) { .simulator-inner { --phone-scale: 0.80; } }
-  @media (max-height: 760px) { .simulator-inner { --phone-scale: 0.72; } }
-  @media (max-height: 680px) { .simulator-inner { --phone-scale: 0.64; } }
+  /* ── Flow guide ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    color: #3B475A;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(245,239,230,0.05);
+    border: 1px solid rgba(245,239,230,0.08);
+  }
+  .flow-step {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background 200ms, color 200ms;
+  }
+  .flow-step.active {
+    background: var(--apricot);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .flow-sep {
+    color: #3B475A;
+    font-size: 10px;
+  }
 
+  /* ── Mobile: full-screen app, no frame ── */
   @media (max-width: 900px) {
+    html, body { overflow: hidden; }
+
     .page {
-      grid-template-columns: 1fr;
+      display: block;
+      height: 100dvh;
+      overflow: hidden;
     }
-    .brief {
-      padding: 48px 28px 40px;
-      max-width: 100%;
-      justify-self: stretch;
-    }
+
+    .brief { display: none; }
+
     .simulator {
-      position: static;
-      height: auto;
-      padding: 40px 20px 56px;
+      position: fixed;
+      inset: 0;
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      gap: 0;
+    }
+
+    .simulator-label,
+    .flow { display: none; }
+
+    .simulator-inner {
+      transform: none !important;
+      width: 100%;
+      height: 100%;
+      gap: 0;
+      justify-content: stretch;
+    }
+
+    #root {
+      width: 100%;
+      height: 100%;
+      flex: 1;
+    }
+
+    /* Strip the iPhone chrome — override inline styles */
+    #root > div {
+      width: 100vw !important;
+      height: 100dvh !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
     }
   }
 
@@ -194,14 +263,25 @@
       <p>Target users are people who navigate urban environments daily and while traveling. The personal safety app market is projected to reach $5.8B by 2032 — reflecting growing demand for tools that increase confidence in everyday mobility.</p>
     </section>
 
-    <p class="caption">Prototype &middot; CloseBy 2026 &middot; Tap through the demo &rarr;</p>
+    <p class="caption">Prototype · CloseBy 2026</p>
   </div>
 
   <!-- ── Phone simulator ── -->
   <div class="simulator">
     <div class="simulator-inner">
-      <div class="simulator-label">Interactive prototype</div>
+      <div class="simulator-label">Try it</div>
       <div id="root"></div>
+      <nav class="flow" id="flow-nav" aria-label="App flow">
+        <span class="flow-step active" id="step-home">Home</span>
+        <span class="flow-sep">›</span>
+        <span class="flow-step" id="step-search">Search</span>
+        <span class="flow-sep">›</span>
+        <span class="flow-step" id="step-routes">Routes</span>
+        <span class="flow-sep">›</span>
+        <span class="flow-step" id="step-walking">Walking</span>
+        <span class="flow-sep">›</span>
+        <span class="flow-step" id="step-arrive">Arrive</span>
+      </nav>
     </div>
   </div>
 
@@ -220,8 +300,128 @@
 <script type="text/babel" src="Walking.jsx"></script>
 <script type="text/babel" src="App.jsx"></script>
 <script type="text/babel">
+  // Patch App to sync screen → flow indicator
+  const _OrigApp = App;
+
+  const STEP_MAP = {
+    home:    "step-home",
+    search:  "step-search",
+    routes:  "step-routes",
+    walking: "step-walking",
+  };
+
+  function AppWithFlow() {
+    const [screen, setScreen] = React.useState("home");
+
+    // Sync step highlight
+    React.useEffect(() => {
+      const steps = ["step-home","step-search","step-routes","step-walking","step-arrive"];
+      const active = STEP_MAP[screen] ?? "step-home";
+      steps.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle("active", el.id === active);
+      });
+    }, [screen]);
+
+    // We re-implement App inline so we can intercept setScreen
+    const [dest, setDest] = React.useState(null);
+    const [route, setRoute] = React.useState(null);
+    const [showReport, setShowReport] = React.useState(false);
+    const [companionOn, setCompanionOn] = React.useState(false);
+    const [arrived, setArrived] = React.useState(false);
+
+    const go = (s) => { setScreen(s); };
+    const progress = screen === "walking" ? 0.35 : screen === "routes" ? 0.6 : 0;
+
+    // Mark arrive step when arrived
+    React.useEffect(() => {
+      const el = document.getElementById("step-arrive");
+      if (el) el.classList.toggle("active", arrived);
+      const walkEl = document.getElementById("step-walking");
+      if (walkEl) walkEl.classList.toggle("active", screen === "walking" && !arrived);
+    }, [arrived, screen]);
+
+    return (
+      <Phone>
+        <StatusBar theme="dark" time="9:24"/>
+        <HomeIndicator theme="dark"/>
+        <div style={{ position:"absolute", inset:0 }}>
+          <MapCanvas routeProgress={progress} showRoute={screen !== "home" && screen !== "search"}/>
+        </div>
+        <TopFade/>
+
+        {screen === "walking" && (
+          <TopPill
+            left={<GlassButton onClick={() => go("home")}><Icon.X size={18}/></GlassButton>}
+            center={<div style={{display:"flex",justifyContent:"center"}}><ScoreBadge score={82} sub="Calm · lit" compact/></div>}
+            right={<GlassButton><Icon.Eye size={18}/></GlassButton>}
+          />
+        )}
+
+        {companionOn && screen === "walking" && <CompanionActive onEnd={() => setCompanionOn(false)}/>}
+
+        {screen === "home" && !showReport && (
+          <BottomSheet snap="half">
+            <HomeSheet
+              onStartSearch={() => go("search")}
+              onStartRoute={(place) => { setDest(place.label); go("routes"); }}
+              companionOn={companionOn}
+              onToggleCompanion={() => setCompanionOn(v => !v)}
+            />
+          </BottomSheet>
+        )}
+
+        {screen === "search" && (
+          <BottomSheet snap="full">
+            <SearchSheet
+              onPick={(s) => { setDest(s.name); go("routes"); }}
+              onClose={() => go("home")}
+            />
+          </BottomSheet>
+        )}
+
+        {screen === "routes" && (
+          <BottomSheet snap="half">
+            <RoutesSheet
+              destination={dest || "Union Square"}
+              onBack={() => go("home")}
+              onStart={(r) => { setRoute(r); go("walking"); }}
+            />
+          </BottomSheet>
+        )}
+
+        {screen === "walking" && !showReport && (
+          <BottomSheet snap="peek">
+            <WalkingSheet
+              route={route || { score: 82 }}
+              onReport={() => setShowReport(true)}
+              onArrive={() => setArrived(true)}
+              companionOn={companionOn}
+            />
+          </BottomSheet>
+        )}
+
+        {showReport && (
+          <BottomSheet snap="half">
+            <ReportSheet onClose={() => setShowReport(false)} onSubmit={() => setShowReport(false)}/>
+          </BottomSheet>
+        )}
+
+        {arrived && (
+          <div style={{position:"absolute",inset:0,background:"rgba(11,17,24,0.85)",backdropFilter:"blur(10px)",zIndex:80,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+            <div style={{background:"#151F2C",borderRadius:24,padding:28,maxWidth:320,textAlign:"center",border:"1px solid rgba(245,239,230,0.1)"}}>
+              <div className="display" style={{fontSize:34,color:"#F5EFE6",marginBottom:8}}>You're home.</div>
+              <div style={{fontSize:14,color:"#BDC5D1",marginBottom:20}}>Companion ended. Maya notified you arrived safely.</div>
+              <button onClick={() => { setArrived(false); go("home"); setCompanionOn(false); }} style={{padding:"14px 28px",borderRadius:999,background:"#E89B6C",color:"#0E1620",border:"none",fontFamily:"Inter Tight",fontSize:15,fontWeight:600,cursor:"pointer"}}>Done</button>
+            </div>
+          </div>
+        )}
+      </Phone>
+    );
+  }
+
   const root = ReactDOM.createRoot(document.getElementById('root'));
-  root.render(<App />);
+  root.render(<AppWithFlow />);
 </script>
 </body>
 </html>
