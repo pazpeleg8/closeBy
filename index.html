@@ -328,22 +328,30 @@
     const [companionOn, setCompanionOn] = React.useState(false);
     const [arrived, setArrived] = React.useState(false);
     const [walkProgress, setWalkProgress] = React.useState(0);
+    const rafRef  = React.useRef(null);
+    const startTs = React.useRef(null);
 
     const go = (s) => {
       setScreen(s);
-      if (s === "walking") setWalkProgress(0);
+      if (s === "walking") { setWalkProgress(0); startTs.current = null; }
     };
 
-    // Auto-advance walkProgress when walking: 0 → 0.92 over ~38s, then loop
+    // Smooth 60fps walk animation using requestAnimationFrame
     React.useEffect(() => {
-      if (screen !== "walking" || arrived) return;
-      const id = setInterval(() => {
-        setWalkProgress(p => {
-          if (p >= 0.92) { return 0.05; } // loop back to start
-          return p + (1 / 190); // ~38s at 200ms interval
-        });
-      }, 200);
-      return () => clearInterval(id);
+      if (screen !== "walking" || arrived) {
+        cancelAnimationFrame(rafRef.current);
+        startTs.current = null;
+        return;
+      }
+      const DURATION = 36000; // 36s per loop
+      function tick(ts) {
+        if (!startTs.current) startTs.current = ts;
+        const t = ((ts - startTs.current) % DURATION) / DURATION;
+        setWalkProgress(t);
+        rafRef.current = requestAnimationFrame(tick);
+      }
+      rafRef.current = requestAnimationFrame(tick);
+      return () => { cancelAnimationFrame(rafRef.current); startTs.current = null; };
     }, [screen, arrived]);
 
     const mapProgress = screen === "walking" ? walkProgress
@@ -375,7 +383,9 @@
           />
         )}
 
-        {companionOn && screen === "walking" && <CompanionActive onEnd={() => setCompanionOn(false)}/>}
+        {companionOn && (screen === "walking" || screen === "home" || screen === "routes") && (
+          <CompanionActive onEnd={() => setCompanionOn(false)}/>
+        )}
 
         {screen === "home" && !showReport && (
           <BottomSheet snap="full">

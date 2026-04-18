@@ -1,50 +1,113 @@
-/* global React, Icon, scoreColor, ScoreBadge, GlassButton */
-const { useState } = React;
+/* global React, Icon, scoreColor */
+const { useState, useEffect, useRef } = React;
 
-// ----- Home view: saved places + quick actions ----------------------------
+function fmt(s) {
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+// ── HomeSheet ─────────────────────────────────────────────────────────────────
 function HomeSheet({ onStartSearch, onStartRoute, companionOn, onToggleCompanion }) {
   const saved = [
-    { icon: "Home", label: "Home", meta: "12 min · Calm", score: 84 },
-    { icon: "Bookmark", label: "Work", meta: "22 min · Busy", score: 62 },
-    { icon: "Users", label: "Maya's place", meta: "8 min · Calm", score: 88 },
+    { icon:"Home",     label:"Home",        meta:"12 min · Calm", score:84 },
+    { icon:"Bookmark", label:"Work",        meta:"22 min · Busy", score:62 },
+    { icon:"Users",    label:"Maya's place",meta:"8 min · Calm",  score:88 },
   ];
+
+  // Companion state (mirrors WalkingSheet logic)
+  const [checkIn, setCheckIn]         = useState(90);
+  const [speaking, setSpeaking]       = useState(true);
+  const [silenceFor, setSilenceFor]   = useState(0);
+  const [unresponsive, setUnresponsive] = useState(false);
+  const [notified, setNotified]       = useState(false);
+  const timerRef = useRef(null);
+
+  // Check-in countdown
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (!companionOn || unresponsive) return;
+    timerRef.current = setInterval(() => {
+      setCheckIn(s => {
+        if (s <= 1) {
+          clearInterval(timerRef.current);
+          setUnresponsive(true);
+          setTimeout(() => setNotified(true), 400);
+          setTimeout(() => {
+            setUnresponsive(false); setNotified(false); setCheckIn(90);
+          }, 5000);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [companionOn, unresponsive]);
+
+  // Voice activity simulation
+  useEffect(() => {
+    if (!companionOn) { setSpeaking(true); setSilenceFor(0); return; }
+    function schedule() {
+      const delay = speaking ? 2000 + Math.random() * 4000 : 1500 + Math.random() * 3500;
+      return setTimeout(() => setSpeaking(v => !v), delay);
+    }
+    const id = schedule();
+    return () => clearTimeout(id);
+  }, [companionOn, speaking]);
+
+  // Silence counter
+  useEffect(() => {
+    if (!companionOn || speaking) { setSilenceFor(0); return; }
+    const t = setInterval(() => setSilenceFor(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [companionOn, speaking]);
+
+  // Reset when companion toggled on
+  useEffect(() => {
+    if (companionOn) { setCheckIn(90); setSpeaking(true); setSilenceFor(0); }
+  }, [companionOn]);
+
+  const checkInUrgent = companionOn && checkIn <= 20 && !unresponsive;
+
   return (
     <>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
-        <span className="display" style={{ fontSize: 28, color: "#F5EFE6" }}>Evening, Anna</span>
-        <span style={{ fontSize: 12, fontWeight: 500, color: "#8593A6" }}>9:24 PM · sunset +2h</span>
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:14 }}>
+        <span className="display" style={{ fontSize:28, color:"#F5EFE6" }}>Evening, Anna</span>
+        <span style={{ fontSize:12, fontWeight:500, color:"#8593A6" }}>9:24 PM · sunset +2h</span>
       </div>
 
-      <button onClick={onStartSearch} style={{
-        display: "flex", alignItems: "center", gap: 12, width: "100%",
-        padding: "14px 16px", borderRadius: 14,
-        background: "rgba(14,22,32,0.6)", border: "1px solid rgba(245,239,230,0.1)",
-        color: "#8593A6", fontFamily: "Inter Tight", fontSize: 15, cursor: "pointer", textAlign: "left"
-      }}>
+      {/* Search */}
+      <button onClick={onStartSearch} style={{ display:"flex", alignItems:"center", gap:12,
+        width:"100%", padding:"14px 16px", borderRadius:14,
+        background:"rgba(14,22,32,0.6)", border:"1px solid rgba(245,239,230,0.1)",
+        color:"#8593A6", fontFamily:"Inter Tight", fontSize:15, cursor:"pointer", textAlign:"left" }}>
         <Icon.Search size={18}/> Where to?
       </button>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 18 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8593A6" }}>Saved</div>
+      {/* Saved places */}
+      <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:18 }}>
+        <div style={{ fontSize:11, fontWeight:600, letterSpacing:"0.12em",
+                      textTransform:"uppercase", color:"#8593A6" }}>Saved</div>
         {saved.map((s, i) => {
           const c = scoreColor(s.score);
-          const IconEl = Icon[s.icon];
+          const El = Icon[s.icon];
           return (
-            <button key={i} onClick={() => onStartRoute(s)} style={{
-              display: "flex", alignItems: "center", gap: 14, width: "100%",
-              padding: "12px 14px", borderRadius: 14, background: "rgba(14,22,32,0.5)",
-              border: "1px solid rgba(245,239,230,0.06)", color: "#F5EFE6",
-              fontFamily: "Inter Tight", cursor: "pointer", textAlign: "left"
-            }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(232,155,108,0.14)", display: "flex", alignItems: "center", justifyContent: "center", color: "#E89B6C" }}>
-                <IconEl size={18}/>
+            <button key={i} onClick={() => onStartRoute(s)} style={{ display:"flex",
+              alignItems:"center", gap:14, width:"100%", padding:"12px 14px", borderRadius:14,
+              background:"rgba(14,22,32,0.5)", border:"1px solid rgba(245,239,230,0.06)",
+              color:"#F5EFE6", fontFamily:"Inter Tight", cursor:"pointer", textAlign:"left" }}>
+              <div style={{ width:40, height:40, borderRadius:12,
+                background:"rgba(232,155,108,0.14)", display:"flex",
+                alignItems:"center", justifyContent:"center", color:"#E89B6C" }}>
+                <El size={18}/>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 600 }}>{s.label}</div>
-                <div style={{ fontSize: 12, color: "#BDC5D1" }}>{s.meta}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:15, fontWeight:600 }}>{s.label}</div>
+                <div style={{ fontSize:12, color:"#BDC5D1" }}>{s.meta}</div>
               </div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: c.bg, color: c.fg, fontSize: 12, fontWeight: 600 }}>
-                <span className="score-digit" style={{ fontSize: 14 }}>{s.score}</span>
+              <span style={{ display:"inline-flex", alignItems:"center", gap:6,
+                padding:"4px 10px", borderRadius:999, background:c.bg, color:c.fg,
+                fontSize:12, fontWeight:600 }}>
+                <span className="score-digit" style={{ fontSize:14 }}>{s.score}</span>
                 {c.label}
               </span>
             </button>
@@ -52,59 +115,153 @@ function HomeSheet({ onStartSearch, onStartRoute, companionOn, onToggleCompanion
         })}
       </div>
 
-      <div style={{ marginTop: 18, padding: 14, borderRadius: 14, background: companionOn ? "#E89B6C" : "rgba(232,155,108,0.1)", border: "1px solid rgba(232,155,108,0.3)", display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 999, background: companionOn ? "rgba(14,22,32,0.15)" : "rgba(232,155,108,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: companionOn ? "#0E1620" : "#E89B6C" }}>
-          <Icon.Phone size={18}/>
-        </div>
-        <div style={{ flex: 1, color: companionOn ? "#0E1620" : "#F5EFE6" }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>{companionOn ? "Companion is on" : "Call companion"}</div>
-          <div style={{ fontSize: 12, opacity: 0.7 }}>{companionOn ? "Stays on until you're inside" : "Fake call · friends notified if silent"}</div>
-        </div>
-        <button onClick={onToggleCompanion} style={{
-          padding: "8px 14px", borderRadius: 999, border: "none", cursor: "pointer",
-          background: companionOn ? "#0E1620" : "#E89B6C", color: companionOn ? "#F5EFE6" : "#0E1620",
-          fontFamily: "Inter Tight", fontSize: 13, fontWeight: 600
-        }}>{companionOn ? "Hang up" : "Start"}</button>
+      {/* ── Companion section ── */}
+      <div style={{ marginTop:18 }}>
+        {!companionOn ? (
+          /* OFF */
+          <div style={{ padding:"14px", borderRadius:14, background:"rgba(232,155,108,0.08)",
+            border:"1px solid rgba(232,155,108,0.25)", display:"flex", alignItems:"center", gap:12 }}>
+            <div style={{ width:40, height:40, borderRadius:999, background:"rgba(232,155,108,0.15)",
+              display:"flex", alignItems:"center", justifyContent:"center", color:"#E89B6C" }}>
+              <Icon.Phone size={18}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:600, color:"#F5EFE6" }}>AI companion call</div>
+              <div style={{ fontSize:12, color:"#8593A6", marginTop:1 }}>Simulates a call. Alerts Maya & Sara if silent.</div>
+            </div>
+            <button onClick={onToggleCompanion} style={{ padding:"8px 14px", borderRadius:999,
+              border:"none", cursor:"pointer", background:"#E89B6C", color:"#0E1620",
+              fontFamily:"Inter Tight", fontSize:13, fontWeight:600 }}>Start</button>
+          </div>
+        ) : unresponsive ? (
+          /* UNRESPONSIVE */
+          <div style={{ padding:"14px", borderRadius:14,
+            background: notified ? "rgba(79,138,114,0.15)" : "rgba(196,90,74,0.15)",
+            border:`1px solid ${notified ? "rgba(79,138,114,0.4)" : "rgba(196,90,74,0.4)"}`,
+            display:"flex", alignItems:"center", gap:12, transition:"all 400ms" }}>
+            <div style={{ width:38, height:38, borderRadius:999, flexShrink:0,
+              background: notified ? "rgba(79,138,114,0.2)" : "rgba(196,90,74,0.2)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              color: notified ? "#7DB39A" : "#C45A4A" }}><Icon.Alert size={17}/></div>
+            <div style={{ flex:1 }}>
+              {notified ? (
+                <>
+                  <div style={{ fontSize:13, fontWeight:600, color:"#7DB39A" }}>Contacts notified</div>
+                  <div style={{ fontSize:11, color:"#8593A6", marginTop:2 }}>Maya & Sara received your location.</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize:13, fontWeight:600, color:"#C45A4A" }}>No response — alerting contacts</div>
+                  <div style={{ fontSize:11, color:"#8593A6", marginTop:2 }}>Notifying Maya & Sara now…</div>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ON + responsive: voice indicator + check-in */
+          <div style={{ borderRadius:14, overflow:"hidden",
+            border:`1px solid ${checkInUrgent ? "rgba(196,90,74,0.35)" : "rgba(232,155,108,0.3)"}`,
+            transition:"border-color 300ms" }}>
+
+            {/* Voice bar */}
+            <div style={{ padding:"12px 14px", background:"#E89B6C",
+              display:"flex", alignItems:"center", gap:12 }}>
+              <div style={{ width:36, height:36, borderRadius:999, background:"rgba(14,22,32,0.15)",
+                display:"flex", alignItems:"center", justifyContent:"center", color:"#0E1620" }}>
+                <Icon.Phone size={16}/>
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:"#0E1620" }}>Companion · on the line</div>
+                <div style={{ fontSize:11, color:"rgba(14,22,32,0.6)", marginTop:1 }}>Maya (auto)</div>
+              </div>
+              {/* Voice / silence indicator */}
+              {speaking ? (
+                <div style={{ display:"flex", alignItems:"center", gap:2, height:18, flexShrink:0 }}>
+                  {["waveA 0.8s ease-in-out infinite",
+                    "waveB 0.8s ease-in-out 0.15s infinite",
+                    "waveC 0.8s ease-in-out 0.3s infinite",
+                    "waveB 0.8s ease-in-out 0.45s infinite",
+                    "waveA 0.8s ease-in-out 0.6s infinite",
+                  ].map((anim, i) => (
+                    <div key={i} style={{ width:3, borderRadius:2,
+                      background:"rgba(14,22,32,0.45)", animation:anim }}/>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ fontSize:11, fontWeight:700, color:"rgba(14,22,32,0.55)",
+                  flexShrink:0, textAlign:"right" }}>
+                  <div>Silent</div>
+                  <div className="mono">{fmt(silenceFor)}</div>
+                </div>
+              )}
+              <button onClick={onToggleCompanion} style={{ background:"rgba(14,22,32,0.2)",
+                border:"none", padding:"7px 12px", borderRadius:999, color:"#0E1620",
+                fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Inter Tight" }}>End</button>
+            </div>
+
+            {/* Check-in row */}
+            <div style={{ padding:"11px 14px",
+              background: checkInUrgent ? "rgba(196,90,74,0.12)" : "rgba(14,22,32,0.5)",
+              display:"flex", alignItems:"center", gap:10, transition:"background 300ms" }}>
+              <div style={{ width:8, height:8, borderRadius:999, flexShrink:0,
+                background: checkInUrgent ? "#C45A4A" : "#4F8A72",
+                animation:"pulse 1.4s ease-in-out infinite",
+                boxShadow:`0 0 0 4px ${checkInUrgent ? "rgba(196,90,74,0.25)" : "rgba(79,138,114,0.2)"}` }}/>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:12, color: checkInUrgent ? "#EFC9C2" : "#F5EFE6", fontWeight:500 }}>
+                  Contacts alerted if no response in{" "}
+                  <span className="mono" style={{ fontWeight:700,
+                    color: checkInUrgent ? "#C45A4A" : "#F5EFE6" }}>{fmt(checkIn)}</span>
+                </div>
+              </div>
+              <button onClick={() => setCheckIn(90)} style={{ padding:"6px 12px", borderRadius:999,
+                border:"none", cursor:"pointer",
+                background: checkInUrgent ? "#C45A4A" : "rgba(245,239,230,0.1)",
+                color: checkInUrgent ? "#fff" : "#F5EFE6",
+                fontFamily:"Inter Tight", fontSize:12, fontWeight:600,
+                transition:"background 300ms" }}>I'm okay</button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
 }
 
-// ----- Search view --------------------------------------------------------
+// ── SearchSheet ───────────────────────────────────────────────────────────────
 function SearchSheet({ onPick, onClose }) {
   const [q, setQ] = useState("");
   const suggestions = [
-    { name: "Union Square", meta: "0.6 mi · 14 St & Broadway" },
-    { name: "Bowery Ballroom", meta: "1.1 mi · 6 Delancey St" },
-    { name: "Maya's place", meta: "0.4 mi · Saved" },
-    { name: "Bedford Ave L stop", meta: "2.3 mi · Brooklyn" },
+    { name:"Union Square",      meta:"0.6 mi · 14 St & Broadway" },
+    { name:"Bowery Ballroom",   meta:"1.1 mi · 6 Delancey St" },
+    { name:"Maya's place",      meta:"0.4 mi · Saved" },
+    { name:"Bedford Ave L stop",meta:"2.3 mi · Brooklyn" },
   ];
   return (
     <>
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14 }}>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 14, background: "rgba(14,22,32,0.6)", border: "1px solid rgba(232,155,108,0.4)" }}>
+      <div style={{ display:"flex", gap:10, alignItems:"center", marginBottom:14 }}>
+        <div style={{ flex:1, display:"flex", alignItems:"center", gap:10, padding:"12px 14px",
+          borderRadius:14, background:"rgba(14,22,32,0.6)", border:"1px solid rgba(232,155,108,0.4)" }}>
           <Icon.Search size={18}/>
-          <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Where to?" style={{
-            background: "transparent", border: "none", outline: "none", color: "#F5EFE6",
-            fontFamily: "Inter Tight", fontSize: 15, flex: 1
-          }}/>
+          <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Where to?"
+            style={{ background:"transparent", border:"none", outline:"none", color:"#F5EFE6",
+                     fontFamily:"Inter Tight", fontSize:15, flex:1 }}/>
         </div>
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "#BDC5D1", fontFamily: "Inter Tight", fontSize: 14, cursor: "pointer" }}>Cancel</button>
+        <button onClick={onClose} style={{ background:"none", border:"none", color:"#BDC5D1",
+          fontFamily:"Inter Tight", fontSize:14, cursor:"pointer" }}>Cancel</button>
       </div>
-
-      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8593A6", marginBottom: 8 }}>Suggestions</div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <div style={{ fontSize:11, fontWeight:600, letterSpacing:"0.12em",
+        textTransform:"uppercase", color:"#8593A6", marginBottom:8 }}>Suggestions</div>
+      <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
         {suggestions.map((s, i) => (
-          <button key={i} onClick={() => onPick(s)} style={{
-            display: "flex", alignItems: "center", gap: 14, padding: "14px 10px",
-            background: "transparent", border: "none", borderBottom: i < suggestions.length - 1 ? "1px solid rgba(245,239,230,0.06)" : "none",
-            color: "#F5EFE6", cursor: "pointer", textAlign: "left", fontFamily: "Inter Tight"
-          }}>
+          <button key={i} onClick={() => onPick(s)} style={{ display:"flex", alignItems:"center",
+            gap:14, padding:"14px 10px", background:"transparent", border:"none",
+            borderBottom: i < suggestions.length - 1 ? "1px solid rgba(245,239,230,0.06)" : "none",
+            color:"#F5EFE6", cursor:"pointer", textAlign:"left", fontFamily:"Inter Tight" }}>
             <Icon.Pin size={18}/>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 500 }}>{s.name}</div>
-              <div style={{ fontSize: 12, color: "#8593A6" }}>{s.meta}</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:15, fontWeight:500 }}>{s.name}</div>
+              <div style={{ fontSize:12, color:"#8593A6" }}>{s.meta}</div>
             </div>
             <Icon.ChevRight size={16}/>
           </button>
