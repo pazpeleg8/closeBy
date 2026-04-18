@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CloseBy — Safer walking, every night</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    background: var(--cream-2);
+    color: var(--ink);
+  }
+
+  /* ── Layout ── */
+  .page {
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    min-height: 100vh;
+    align-items: start;
+    gap: 0;
+  }
+
+  /* ── Left: one-pager ── */
+  .brief {
+    padding: 64px 56px 64px 72px;
+    max-width: 640px;
+    justify-self: end;
+  }
+
+  .logo {
+    display: block;
+    height: 32px;
+    width: auto;
+    margin-bottom: 56px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--apricot-deep);
+    margin: 0 0 10px;
+  }
+
+  .brief h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0 0 14px;
+    font-variation-settings: "opsz" 72, "SOFT" 30;
+  }
+
+  .brief p {
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.65;
+    color: #3B475A;
+    margin: 0 0 40px;
+  }
+
+  .brief section + section {
+    padding-top: 32px;
+    border-top: 1px solid rgba(14,22,32,0.1);
+  }
+
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 8px;
+    border-radius: 999px;
+    background: #D4E5DC;
+    color: #2A5643;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .score-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #4F8A72;
+    box-shadow: 0 0 0 3px rgba(79,138,114,0.25);
+  }
+  .score-pill .num {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+    line-height: 1;
+  }
+
+  .caption {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: #8593A6;
+    margin-top: 48px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Right: phone simulator ── */
+  .simulator {
+    background: var(--ink);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .simulator-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    /* Scale phone (844px tall) to fit viewport with 64px breathing room */
+    transform: scale(var(--phone-scale, 0.9));
+    transform-origin: center center;
+  }
+
+  .simulator-label {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5B6A80;
+  }
+
+  /* ── Responsive ── */
+  @media (max-height: 920px) { .simulator-inner { --phone-scale: 0.88; } }
+  @media (max-height: 840px) { .simulator-inner { --phone-scale: 0.80; } }
+  @media (max-height: 760px) { .simulator-inner { --phone-scale: 0.72; } }
+  @media (max-height: 680px) { .simulator-inner { --phone-scale: 0.64; } }
+
+  @media (max-width: 900px) {
+    .page {
+      grid-template-columns: 1fr;
+    }
+    .brief {
+      padding: 48px 28px 40px;
+      max-width: 100%;
+      justify-self: stretch;
+    }
+    .simulator {
+      position: static;
+      height: auto;
+      padding: 40px 20px 56px;
+    }
+  }
+
+  /* ── Keyframes used by Walking.jsx ── */
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── One-pager ── -->
+  <div class="brief">
+    <img src="assets/logo-wordmark.svg" alt="CloseBy" class="logo">
+
+    <section>
+      <p class="eyebrow">The Problem</p>
+      <h2>Moving alone at night involves a quiet tension</h2>
+      <p>Navigation apps optimize for time and distance — not for how a route feels. Many people, especially women and young adults, change their behavior: avoiding certain streets, pretending to be on a call, deciding not to walk at all. These situations rarely require emergency help, but they create ongoing stress and reduce independence.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">The Solution</p>
+      <div class="score-pill"><span class="dot"></span><span class="num">82</span> Confidence · Calm</div>
+      <h2>A real-time Confidence Score for every route</h2>
+      <p>CloseBy assigns every route a live score reflecting situational comfort and exposure risk. It recommends safer paths, favors active areas over empty ones, and flags unusual conditions as they develop. When reassurance is needed, an AI companion can simulate a phone call and — if the user becomes unresponsive — automatically notify trusted contacts with location.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">How it works</p>
+      <h2>Two layers, one number</h2>
+      <p>A <strong>baseline layer</strong> estimates comfort from environmental signals: lighting, street activity, time of day. A <strong>real-time layer</strong> continuously updates the score through lightweight user reports — broken lighting, uncomfortable interactions, aggressive gatherings. Both combine into a single number you can see and trust.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Who it's for</p>
+      <h2>Women and young adults moving alone in cities</h2>
+      <p>Target users are people who navigate urban environments daily and while traveling. The personal safety app market is projected to reach $5.8B by 2032 — reflecting growing demand for tools that increase confidence in everyday mobility.</p>
+    </section>
+
+    <p class="caption">Prototype &middot; CloseBy 2026 &middot; Tap through the demo &rarr;</p>
+  </div>
+
+  <!-- ── Phone simulator ── -->
+  <div class="simulator">
+    <div class="simulator-inner">
+      <div class="simulator-label">Interactive prototype</div>
+      <div id="root"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- React + Babel (CDN, no build step) -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Icons.jsx"></script>
+<script type="text/babel" src="Chrome.jsx"></script>
+<script type="text/babel" src="MapCanvas.jsx"></script>
+<script type="text/babel" src="Home.jsx"></script>
+<script type="text/babel" src="Routes.jsx"></script>
+<script type="text/babel" src="Walking.jsx"></script>
+<script type="text/babel" src="App.jsx"></script>
+<script type="text/babel">
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
+</body>
+</html>

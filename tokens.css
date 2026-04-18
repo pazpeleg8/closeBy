@@ -1,0 +1,23 @@
+/** CloseBy UI kit — design tokens mirror of colors_and_type.css */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..800,0..100&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --ink:#0E1620; --ink-2:#151F2C; --ink-3:#1E2A3A; --ink-4:#2A3748;
+  --cream:#F5EFE6; --cream-2:#EDE4D6; --paper:#FAF6F0;
+  --apricot:#E89B6C; --apricot-bright:#F2B088; --apricot-deep:#C87849; --apricot-soft:#F8DFC9; --apricot-tint:#FBEEDF;
+  --sage:#7DB39A; --sage-deep:#4F8A72; --sage-soft:#D4E5DC;
+  --amber:#E3B04B; --amber-deep:#B88A2E; --amber-soft:#F4E3B8;
+  --clay:#C45A4A; --clay-deep:#9A3F32; --clay-soft:#EFC9C2;
+  --fg1:#F5EFE6; --fg2:#BDC5D1; --fg3:#8593A6; --fg4:#5B6A80;
+  --map-bg:#0B1118; --map-land:#141D28; --map-water:#0D1722; --map-road:#253244; --map-road-lit:#3A4B62; --map-park:#1B2A24; --map-label:#8593A6;
+  --font-display:'Fraunces', Georgia, serif;
+  --font-ui:'Inter Tight', -apple-system, system-ui, sans-serif;
+  --font-mono:'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --hairline:rgba(245,239,230,0.1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
+.score-digit { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.03em; font-variation-settings: "opsz" 144, "SOFT" 50; font-feature-settings: "tnum" 1; line-height: 1; }
+.display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.03em; font-variation-settings: "opsz" 144, "SOFT" 30; line-height: 1; }
+.mono { font-family: var(--font-mono); font-feature-settings: "tnum" 1; }
