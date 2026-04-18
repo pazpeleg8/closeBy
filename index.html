@@ -115,7 +115,7 @@
 
   /* ── Right: simulator column ── */
   .simulator {
-    background: var(--ink);
+    background: var(--cream-2);
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -139,7 +139,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #3B475A;
+    color: #8593A6;
   }
 
   /* ── Flow guide ── */
@@ -149,17 +149,18 @@
     gap: 4px;
     font-family: var(--font-ui);
     font-size: 11px;
-    color: #3B475A;
+    color: #8593A6;
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(245,239,230,0.05);
-    border: 1px solid rgba(245,239,230,0.08);
+    background: rgba(14,22,32,0.06);
+    border: 1px solid rgba(14,22,32,0.08);
   }
   .flow-step {
     padding: 3px 8px;
     border-radius: 999px;
     font-weight: 500;
     white-space: nowrap;
+    color: #5B6A80;
     transition: background 200ms, color 200ms;
   }
   .flow-step.active {
@@ -168,7 +169,7 @@
     font-weight: 600;
   }
   .flow-sep {
-    color: #3B475A;
+    color: #BDC5D1;
     font-size: 10px;
   }
 
@@ -355,7 +356,7 @@
         {companionOn && screen === "walking" && <CompanionActive onEnd={() => setCompanionOn(false)}/>}
 
         {screen === "home" && !showReport && (
-          <BottomSheet snap="half">
+          <BottomSheet snap="full">
             <HomeSheet
               onStartSearch={() => go("search")}
               onStartRoute={(place) => { setDest(place.label); go("routes"); }}
