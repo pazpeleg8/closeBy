@@ -15,22 +15,23 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Desktop: two columns locked to viewport ── */
+  /* ── Desktop: two equal columns locked to viewport ── */
   .page {
     display: grid;
-    grid-template-columns: 1fr 460px;
+    grid-template-columns: 1fr 1fr;
     height: 100vh;
     overflow: hidden;
   }
 
-  /* ── Left: brief scrolls inside its column ── */
+  /* ── Left: brief centered, scrolls inside its column ── */
   .brief {
     height: 100vh;
     overflow-y: auto;
-    padding: 52px 56px 64px 64px;
-    max-width: 600px;
+    padding: 52px 48px 64px 48px;
+    max-width: 520px;
     width: 100%;
-    justify-self: end;
+    justify-self: center;
+    align-self: start;
     scrollbar-width: thin;
     scrollbar-color: rgba(14,22,32,0.15) transparent;
   }
@@ -129,16 +130,8 @@
     flex-direction: column;
     align-items: center;
     gap: 14px;
-    transform-origin: center center;
+    transform-origin: top center;
   }
-
-  /* Scale phone (844px) + label (20px) + gap (14px) + flow bar (44px) + gap (14px) ≈ 936px total
-     target: 100vh - 40px margin */
-  @media (max-height: 1000px) { .simulator-inner { transform: scale(0.92); } }
-  @media (max-height: 920px)  { .simulator-inner { transform: scale(0.84); } }
-  @media (max-height: 840px)  { .simulator-inner { transform: scale(0.76); } }
-  @media (max-height: 760px)  { .simulator-inner { transform: scale(0.68); } }
-  @media (max-height: 680px)  { .simulator-inner { transform: scale(0.60); } }
 
   .simulator-label {
     font-family: var(--font-ui);
@@ -205,6 +198,7 @@
 
     .simulator-inner {
       transform: none !important;
+      margin-top: 0 !important;
       width: 100%;
       height: 100%;
       gap: 0;
@@ -422,6 +416,23 @@
 
   const root = ReactDOM.createRoot(document.getElementById('root'));
   root.render(<AppWithFlow />);
+</script>
+<script>
+  function fitPhone() {
+    const sim = document.querySelector('.simulator');
+    const inner = document.querySelector('.simulator-inner');
+    if (!sim || !inner || window.innerWidth <= 900) return;
+    inner.style.transform = '';
+    const available = sim.clientHeight - 48; // 24px breathing room top+bottom
+    const natural = inner.scrollHeight;
+    const scale = Math.min(1, available / natural);
+    inner.style.transform = 'scale(' + scale + ')';
+    // Recenter: transform-origin top center leaves gap at bottom; shift up by half the saved space
+    const saved = (1 - scale) * natural;
+    inner.style.marginTop = '-' + Math.round(saved / 2) + 'px';
+  }
+  window.addEventListener('load', fitPhone);
+  window.addEventListener('resize', fitPhone);
 </script>
 </body>
 </html>
