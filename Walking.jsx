@@ -224,12 +224,36 @@ function WalkingSheet({ route, routeProgress, onReport, onArrive, companionOn, o
 
 // ── ReportSheet ───────────────────────────────────────────────────────────────
 function ReportSheet({ onClose, onSubmit }) {
+  const [submitted, setSubmitted] = useState(false);
+
   const items = [
     { icon:"Lightbulb", label:"Broken lighting",          sub:"Block or street lamp out" },
     { icon:"Users",     label:"Uncomfortable interaction", sub:"Anonymous, calm report" },
     { icon:"Alert",     label:"Aggressive gathering",      sub:"Alerts nearby users" },
     { icon:"Eye",       label:"Feels exposed",             sub:"Empty, unlit block" },
   ];
+
+  function handlePick(it) {
+    setSubmitted(true);
+    setTimeout(() => onSubmit(it), 1800);
+  }
+
+  if (submitted) {
+    return (
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+                    padding:"40px 20px", gap:14, textAlign:"center" }}>
+        <div style={{ width:48, height:48, borderRadius:999, background:"rgba(79,138,114,0.18)",
+                      display:"flex", alignItems:"center", justifyContent:"center", color:"#4F8A72" }}>
+          <Icon.Check size={22}/>
+        </div>
+        <div style={{ fontSize:16, fontWeight:600, color:"#F5EFE6" }}>Thanks.</div>
+        <div style={{ fontSize:13, color:"#8593A6", lineHeight:1.5 }}>
+          Noted for the next person walking through.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:8 }}>
@@ -241,7 +265,7 @@ function ReportSheet({ onClose, onSubmit }) {
         {items.map((it, i) => {
           const El = Icon[it.icon];
           return (
-            <button key={i} onClick={() => onSubmit(it)} style={{ padding:"14px", borderRadius:14,
+            <button key={i} onClick={() => handlePick(it)} style={{ padding:"14px", borderRadius:14,
               background:"rgba(14,22,32,0.5)", border:"1px solid rgba(245,239,230,0.08)",
               color:"#F5EFE6", cursor:"pointer", textAlign:"left", fontFamily:"Inter Tight",
               display:"flex", flexDirection:"column", gap:8, minHeight:100 }}>
