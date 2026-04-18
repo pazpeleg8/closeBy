@@ -1,105 +1,169 @@
 /* global React */
-const { useMemo } = React;
 
-// Stylized dark-map canvas. SVG-only; not a real tile layer.
-// Renders water, parks, a road network, route polyline with apricot dashes,
-// and labels. Pins and the live confidence overlay are optional props.
+// Map canvas sized exactly to the phone (390×844).
+// SVG coordinates map 1:1 to phone pixels — no aspect-ratio distortion.
+// Visible map area when panel is at half snap: y = 0..404.
+// User pin sits just above panel; destination pin sits in the upper portion.
 
-function MapCanvas({ routeProgress = 0, showRoute = true, variant = "home" }) {
-  // Route polyline — a believable walking path
-  const route = "M 60 640 C 90 560 140 520 210 540 S 330 620 360 580 S 440 460 470 440 S 560 380 600 310 S 680 210 720 160";
-  const routeLen = 1200; // approximate length for dashoffset
-  const draw = routeLen * (1 - routeProgress);
+function MapCanvas({ routeProgress = 0, showRoute = true }) {
+  const W = 390, H = 844;
+
+  // Key positions (all within visible map area 0..404)
+  const UX = 115, UY = 355;   // user — lower left of map
+  const TX = 115, TY = 178;   // turn corner — go straight then right
+  const DX = 278, DY = 82;    // destination — upper right
+
+  // Route: north on Broadway → right on 14th → north on 5th Ave to home
+  const routePath = `M ${UX} ${UY} L ${TX} ${TY} L ${DX} ${TY} L ${DX} ${DY}`;
+  const routeLen = (UY - TY) + (DX - TX) + (TY - DY); // 177 + 163 + 96 = 436
+  const drawn = routeLen * routeProgress;
 
   return (
-    <svg viewBox="0 0 780 780" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+      preserveAspectRatio="xMidYMid meet"
+    >
       <defs>
-        <linearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id="routeGrad" x1="0" y1="1" x2="0" y2="0">
           <stop offset="0%" stopColor="#4F8A72"/>
-          <stop offset="50%" stopColor="#E89B6C"/>
+          <stop offset="60%" stopColor="#E89B6C"/>
           <stop offset="100%" stopColor="#F2B088"/>
         </linearGradient>
-        <radialGradient id="userHalo" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor="#E89B6C" stopOpacity="0.6"/>
+        <radialGradient id="userHalo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#F5EFE6" stopOpacity="0.35"/>
+          <stop offset="100%" stopColor="#F5EFE6" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="destHalo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#E89B6C" stopOpacity="0.5"/>
           <stop offset="100%" stopColor="#E89B6C" stopOpacity="0"/>
         </radialGradient>
       </defs>
 
-      {/* Base land */}
-      <rect width="780" height="780" fill="#0B1118"/>
+      {/* ── Base land ── */}
+      <rect width={W} height={H} fill="#0B1118"/>
 
-      {/* Water */}
-      <path d="M 0 0 L 780 0 L 780 80 C 600 90 400 130 200 110 C 100 100 30 120 0 140 Z" fill="#0D1722"/>
-      <path d="M 0 780 L 780 780 L 780 700 C 600 680 450 720 300 700 C 180 685 60 720 0 720 Z" fill="#0D1722"/>
+      {/* ── Water strip (top) ── */}
+      <path d={`M 0 0 L ${W} 0 L ${W} 28 C 260 32 160 24 80 30 C 40 33 10 28 0 30 Z`} fill="#0D1722"/>
 
-      {/* Parks */}
-      <path d="M 450 250 C 520 240 580 250 610 300 C 620 360 560 380 500 370 C 450 360 440 300 450 250 Z" fill="#1B2A24"/>
-      <path d="M 120 380 C 180 370 220 400 200 440 C 180 470 130 470 110 440 C 100 410 100 390 120 380 Z" fill="#1B2A24"/>
+      {/* ── Park block ── */}
+      <rect x="148" y="230" width="108" height="80" rx="4" fill="#1B2A24"/>
+      <text x="202" y="277" fontFamily="Inter Tight, sans-serif" fontSize="8" fontWeight="500"
+            fill="#3A5A48" textAnchor="middle" letterSpacing="0.08em">UNION SQ PARK</text>
 
-      {/* Road network — main roads (lit) */}
-      <g stroke="#3A4B62" strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.9">
-        <path d="M -20 620 Q 200 580 400 600 T 800 540"/>
-        <path d="M 400 0 L 360 780"/>
-        <path d="M -20 300 Q 300 280 500 260 T 800 200"/>
+      {/* ── Road network ──
+           Avenues (vertical): x=40, 115(Broadway), 202, 278(5th), 350
+           Streets (horizontal): y=50, 120, 178(14th St), 230, 320, 390, 460, 540, 640, 720, 800  */}
+
+      {/* Side alleys */}
+      <g stroke="#172030" strokeWidth="1.5" fill="none">
+        <line x1="40"  y1="0" x2="40"  y2={H}/>
+        <line x1="202" y1="0" x2="202" y2={H}/>
+        <line x1="350" y1="0" x2="350" y2={H}/>
+        <line x1="0" y1="50"  x2={W} y2="50"/>
+        <line x1="0" y1="120" x2={W} y2="120"/>
+        <line x1="0" y1="230" x2={W} y2="230"/>
+        <line x1="0" y1="320" x2={W} y2="320"/>
+        <line x1="0" y1="390" x2={W} y2="390"/>
+        <line x1="0" y1="460" x2={W} y2="460"/>
+        <line x1="0" y1="540" x2={W} y2="540"/>
+        <line x1="0" y1="640" x2={W} y2="640"/>
+        <line x1="0" y1="720" x2={W} y2="720"/>
       </g>
-      {/* Secondary roads */}
+
+      {/* Secondary avenues */}
       <g stroke="#253244" strokeWidth="3" strokeLinecap="round" fill="none">
-        <path d="M 100 0 L 120 780"/>
-        <path d="M 600 0 L 650 780"/>
-        <path d="M -20 450 L 800 470"/>
-        <path d="M -20 180 L 800 160"/>
-        <path d="M -20 720 L 800 700"/>
-        <path d="M 250 0 L 280 780"/>
-        <path d="M 520 0 L 540 780"/>
-      </g>
-      {/* Alleys */}
-      <g stroke="#1A2432" strokeWidth="1.5" strokeLinecap="round" fill="none">
-        <path d="M 50 0 L 55 780"/>
-        <path d="M 180 0 L 200 780"/>
-        <path d="M 330 0 L 340 780"/>
-        <path d="M 460 0 L 480 780"/>
-        <path d="M 700 0 L 720 780"/>
-        <path d="M -20 100 L 800 90"/>
-        <path d="M -20 380 L 800 390"/>
-        <path d="M -20 550 L 800 560"/>
+        <line x1="40"  y1="0" x2="40"  y2={H}/>
+        <line x1="202" y1="0" x2="202" y2={H}/>
+        <line x1="350" y1="0" x2="350" y2={H}/>
       </g>
 
+      {/* Main lit roads */}
+      <g stroke="#3A4B62" strokeWidth="5" strokeLinecap="round" fill="none">
+        {/* Broadway — user's street */}
+        <line x1={UX} y1="0" x2={UX} y2={H}/>
+        {/* 14th St — the turn */}
+        <line x1="0" y1={TY} x2={W} y2={TY}/>
+        {/* 5th Ave — destination street */}
+        <line x1={DX} y1="0" x2={DX} y2={H}/>
+      </g>
+
+      {/* Street labels (horizontal) */}
+      <g fontFamily="Inter Tight, sans-serif" fill="#4A5E78" fontSize="9" fontWeight="600" letterSpacing="0.07em">
+        <text x="8"   y={TY - 5} textAnchor="start">W 14 ST</text>
+        <text x="8"   y="115"    textAnchor="start">W 16 ST</text>
+        <text x="8"   y="52"     textAnchor="start">W 18 ST</text>
+      </g>
+      {/* Avenue labels */}
+      <g fontFamily="Inter Tight, sans-serif" fill="#4A5E78" fontSize="9" fontWeight="600" letterSpacing="0.07em" textAnchor="middle">
+        <text x={UX} y={H - 20}>BROADWAY</text>
+        <text x={DX} y={H - 20}>5TH AVE</text>
+      </g>
+
+      {/* ── Route ── */}
       {showRoute && (
         <>
-          {/* Route glow */}
-          <path d={route} stroke="#E89B6C" strokeOpacity="0.25" strokeWidth="10" fill="none" strokeLinecap="round"/>
-          {/* Route line */}
-          <path d={route} stroke="url(#routeGrad)" strokeWidth="4" fill="none" strokeLinecap="round"
-                strokeDasharray={routeLen} strokeDashoffset={draw}
-                style={{ transition: "stroke-dashoffset 600ms var(--ease, ease-out)" }}/>
-          {/* Dots along route */}
-          <path d={route} stroke="#F2B088" strokeWidth="2" fill="none" strokeLinecap="round"
-                strokeDasharray="0 14"/>
+          {/* Glow */}
+          <path d={routePath} stroke="#E89B6C" strokeOpacity="0.18" strokeWidth="14"
+                fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          {/* Route line — draws progressively */}
+          <path d={routePath} stroke="url(#routeGrad)" strokeWidth="4.5"
+                fill="none" strokeLinecap="round" strokeLinejoin="round"
+                strokeDasharray={routeLen} strokeDashoffset={routeLen - drawn}
+                style={{ transition: "stroke-dashoffset 600ms cubic-bezier(0.22,1,0.36,1)" }}/>
+          {/* Dashes overlay */}
+          <path d={routePath} stroke="#F2B088" strokeWidth="2" fill="none"
+                strokeLinecap="round" strokeLinejoin="round" strokeDasharray="0 12" opacity="0.6"/>
         </>
       )}
 
-      {/* Destination pin */}
+      {/* ── Next-turn indicator ── */}
       {showRoute && (
-        <g transform="translate(720 160)">
-          <circle r="18" fill="url(#userHalo)"/>
-          <circle r="7" fill="#E89B6C" stroke="#0E1620" strokeWidth="2"/>
+        <g transform={`translate(${TX} ${TY})`}>
+          {/* corner highlight circle */}
+          <circle r="14" fill="#E89B6C" fillOpacity="0.18"/>
+          <circle r="5"  fill="#E89B6C"/>
+          {/* arrow → pointing right */}
+          <g stroke="#E89B6C" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" fill="none"
+             transform="translate(18 -2)">
+            <line x1="-6" y1="0" x2="6" y2="0"/>
+            <polyline points="2,-4 6,0 2,4"/>
+          </g>
+          {/* label */}
+          <text x="28" y="-12" fontFamily="Inter Tight, sans-serif" fontSize="10" fontWeight="600"
+                fill="#E89B6C" letterSpacing="-0.01em">Turn right</text>
+          <text x="28" y="2"  fontFamily="Inter Tight, sans-serif" fontSize="9"
+                fill="#8593A6">onto 5th Ave</text>
         </g>
       )}
 
-      {/* User position */}
-      <g transform="translate(60 640)">
-        <circle r="26" fill="url(#userHalo)"/>
-        <circle r="9" fill="#F5EFE6" stroke="#0E1620" strokeWidth="3"/>
-      </g>
+      {/* ── Destination pin ── */}
+      {showRoute && (
+        <g transform={`translate(${DX} ${DY})`}>
+          <circle r="32" fill="url(#destHalo)"/>
+          <circle r="10" fill="#E89B6C" stroke="#0E1620" strokeWidth="2.5"/>
+          {/* Home label */}
+          <rect x="-20" y="-36" width="40" height="18" rx="9" fill="#E89B6C"/>
+          <text x="0" y="-23" fontFamily="Inter Tight, sans-serif" fontSize="9" fontWeight="700"
+                fill="#0E1620" textAnchor="middle" letterSpacing="0.04em">HOME</text>
+        </g>
+      )}
 
-      {/* Labels */}
-      <g fontFamily="Inter Tight, sans-serif" fill="#8593A6" fontSize="11" fontWeight="500" letterSpacing="0.06em" textAnchor="middle">
-        <text x="530" y="315" fill="#5F7A6E">WASHINGTON SQ PARK</text>
-        <text x="160" y="420" fill="#5F7A6E">UNION SQ</text>
-        <text x="400" y="40" fontSize="9" opacity="0.7">EAST RIVER</text>
-        <text x="400" y="760" fontSize="9" opacity="0.7">HUDSON</text>
+      {/* ── User position ── */}
+      <g transform={`translate(${UX} ${UY})`}>
+        <circle r="36" fill="url(#userHalo)"/>
+        {/* accuracy ring */}
+        <circle r="18" stroke="#F5EFE6" strokeWidth="1" strokeOpacity="0.15" fill="none"/>
+        {/* dot */}
+        <circle r="9" fill="#F5EFE6" stroke="#0E1620" strokeWidth="3"/>
+        {/* heading arrow ↑ */}
+        <g stroke="#F5EFE6" strokeWidth="2" strokeLinecap="round" fill="none" transform="translate(0 -14)">
+          <line x1="0" y1="5" x2="0" y2="-5"/>
+          <polyline points="-3,-1 0,-5 3,-1"/>
+        </g>
       </g>
     </svg>
   );
 }
+
 Object.assign(window, { MapCanvas });
