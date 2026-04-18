@@ -386,7 +386,7 @@
         )}
 
         {screen === "walking" && !showReport && (
-          <BottomSheet snap="peek">
+          <BottomSheet snap="half">
             <WalkingSheet
               route={route || { score: 82 }}
               onReport={() => setShowReport(true)}
