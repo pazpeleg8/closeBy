@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CloseBy — Safer walking, every night</title>
+<title>CloseBy | Navigate safely</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230E1620'/><text x='16' y='21' font-family='Georgia,serif' font-size='15' text-anchor='middle' fill='%23E89B6C'>C</text></svg>">
 <link rel="stylesheet" href="tokens.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; }
@@ -18,25 +19,50 @@
   /* ── Desktop: two equal columns locked to viewport ── */
   .page {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr minmax(420px, 1fr);
     height: 100vh;
     overflow: hidden;
+    padding: 0 clamp(24px, 7vw, 120px);
   }
 
   /* ── Left: brief centered, scrolls inside its column ── */
   .brief {
     height: 100vh;
     overflow-y: auto;
-    padding: 52px 48px 64px 48px;
-    max-width: 520px;
+    padding: 52px 40px 64px 48px;
+    max-width: 640px;
     width: 100%;
-    justify-self: center;
     align-self: start;
     scrollbar-width: thin;
     scrollbar-color: rgba(14,22,32,0.15) transparent;
   }
   .brief::-webkit-scrollbar { width: 4px; }
   .brief::-webkit-scrollbar-thumb { background: rgba(14,22,32,0.15); border-radius: 2px; }
+
+  .brief-fade {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 14px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--cream-2));
+    margin-top: -80px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .brief-scroll-hint {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8593A6;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
 
   .logo {
     display: block;
@@ -209,6 +235,7 @@
       display: block;
       height: 100dvh;
       overflow: hidden;
+      padding: 0;
     }
 
     .brief { display: none; }
@@ -224,7 +251,8 @@
 
     .simulator-label,
     .sim-header,
-    .flow { display: none; }
+    .flow,
+    .brief-fade { display: none; }
 
     .simulator-inner {
       transform: none !important;
@@ -269,29 +297,41 @@
     <section>
       <p class="eyebrow">The Problem</p>
       <h2>Moving alone at night involves a quiet tension</h2>
-      <p>Navigation apps optimize for time and distance — not for how a route feels. Many people, especially women and young adults, change their behavior: avoiding certain streets, pretending to be on a call, deciding not to walk at all. These situations rarely require emergency help, but they create ongoing stress and reduce independence.</p>
+      <p>Navigation apps optimize for time and distance, not for how a route feels. Many people, especially women and young adults, change their behavior: avoiding certain streets, pretending to be on a call, deciding not to walk at all. These situations rarely require emergency help, but they create ongoing stress and reduce independence.</p>
     </section>
 
     <section>
       <p class="eyebrow">The Solution</p>
       <div class="score-pill"><span class="dot"></span><span class="num">82</span> Confidence · Calm</div>
       <h2>A real-time Confidence Score for every route</h2>
-      <p>CloseBy assigns every route a live score reflecting situational comfort and exposure risk. It recommends safer paths, favors active areas over empty ones, and flags unusual conditions as they develop. When reassurance is needed, an AI companion can simulate a phone call and — if the user becomes unresponsive — automatically notify trusted contacts with location.</p>
+      <p>CloseBy assigns every route a live score reflecting situational comfort and exposure risk. It recommends safer paths, favors active areas over empty ones, and flags unusual conditions as they develop. When reassurance is needed, an AI companion can simulate a phone call.</p>
     </section>
 
     <section>
       <p class="eyebrow">How it works</p>
       <h2>Two layers, one number</h2>
-      <p>A <strong>baseline layer</strong> estimates comfort from environmental signals: lighting, street activity, time of day. A <strong>real-time layer</strong> continuously updates the score through lightweight user reports — broken lighting, uncomfortable interactions, aggressive gatherings. Both combine into a single number you can see and trust.</p>
+      <p>A <strong>baseline layer</strong> estimates comfort from environmental signals: lighting, street activity, time of day. A <strong>real-time layer</strong> continuously updates the score through lightweight user reports: broken lighting, uncomfortable interactions, aggressive gatherings. Both combine into a single number you can see and trust.</p>
     </section>
 
     <section>
       <p class="eyebrow">Who it's for</p>
       <h2>Women and young adults moving alone in cities</h2>
-      <p>Target users are people who navigate urban environments daily and while traveling. The personal safety app market is projected to reach $5.8B by 2032 — reflecting growing demand for tools that increase confidence in everyday mobility.</p>
+      <p>Target users are people who navigate urban environments daily and while traveling. The personal safety app market is projected to reach $5.8B by 2032, reflecting growing demand for tools that increase confidence in everyday mobility.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Vision</p>
+      <h2>Go where you want, without thinking twice</h2>
+      <p>Moving alone in a city shouldn't require constant calculations. After too many moments of adjusting routes and staying alert just to feel okay, I wanted a different reality. CloseBy is meant to give people the confidence to simply go where they want, without thinking twice.</p>
     </section>
 
     <p class="caption">Prototype · CloseBy 2026</p>
+    <div class="brief-fade">
+      <span class="brief-scroll-hint">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        scroll
+      </span>
+    </div>
   </div>
 
   <!-- ── Phone simulator ── -->
@@ -499,7 +539,7 @@
     inner.style.marginTop = '';
     inner.style.marginBottom = '';
     const headerH = header ? header.offsetHeight + 14 : 0; // 14px = sim-header margin-bottom
-    const available = sim.clientHeight - headerH - 20; // 20px = simulator padding-top
+    const available = sim.clientHeight - headerH - 20 - 28; // 20px padding-top + 28px bottom gap
     const natural = inner.scrollHeight;
     const scale = Math.min(1, available / natural);
     inner.style.transform = 'scale(' + scale + ')';
@@ -508,7 +548,20 @@
       inner.style.marginBottom = '-' + Math.round((1 - scale) * natural) + 'px';
     }
   }
-  window.addEventListener('load', fitPhone);
+  function fitPhoneWhenReady() {
+    fitPhone();
+    // Babel+React render async after load; re-run once React paints the Phone into #root
+    var root = document.getElementById('root');
+    if (root) {
+      var mo = new MutationObserver(function() { fitPhone(); mo.disconnect(); });
+      mo.observe(root, { childList: true });
+    }
+    // Fallback retries in case observer fires before layout settles
+    setTimeout(fitPhone, 300);
+    setTimeout(fitPhone, 1000);
+    setTimeout(fitPhone, 2500);
+  }
+  window.addEventListener('load', fitPhoneWhenReady);
   window.addEventListener('resize', fitPhone);
 </script>
 </body>

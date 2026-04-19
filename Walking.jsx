@@ -184,7 +184,7 @@ function WalkingSheet({ route, routeProgress, onReport, onArrive, companionOn, o
               </>
             ) : (
               <>
-                <div style={{ fontSize:13, fontWeight:600, color:"#C45A4A" }}>No response — alerting contacts</div>
+                <div style={{ fontSize:13, fontWeight:600, color:"#C45A4A" }}>No response, alerting contacts</div>
                 <div style={{ fontSize:11, color:"#8593A6", marginTop:2 }}>Notifying Maya &amp; Sara now…</div>
               </>
             )}

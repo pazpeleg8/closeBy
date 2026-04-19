@@ -51,9 +51,18 @@ function RoutesSheet({ destination, onStart, onBack, companionOn, onToggleCompan
         })}
       </div>
 
+      <button onClick={() => onStart(chosen)} style={{
+        marginTop: 14, width: "100%", padding: "16px 24px", borderRadius: 999,
+        background: "#E89B6C", color: "#0E1620", border: "none", cursor: "pointer",
+        fontFamily: "Inter Tight", fontSize: 16, fontWeight: 600,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 8
+      }}>
+        <Icon.Navigation size={18}/> Start walking · {chosen.meta.split(" · ")[0]}
+      </button>
+
       {/* Companion toggle */}
       <div style={{
-        marginTop: 14, padding: "12px 14px", borderRadius: 14,
+        marginTop: 10, padding: "12px 14px", borderRadius: 14,
         background: companionOn ? "rgba(232,155,108,0.14)" : "rgba(14,22,32,0.45)",
         border: companionOn ? "1px solid rgba(232,155,108,0.35)" : "1px solid rgba(245,239,230,0.08)",
         display: "flex", alignItems: "center", gap: 12,
@@ -82,15 +91,6 @@ function RoutesSheet({ destination, onStart, onBack, companionOn, onToggleCompan
           fontFamily: "Inter Tight", fontSize: 12, fontWeight: 700, flexShrink: 0
         }}>{companionOn ? "On" : "Start"}</button>
       </div>
-
-      <button onClick={() => onStart(chosen)} style={{
-        marginTop: 12, width: "100%", padding: "16px 24px", borderRadius: 999,
-        background: "#E89B6C", color: "#0E1620", border: "none", cursor: "pointer",
-        fontFamily: "Inter Tight", fontSize: 16, fontWeight: 600,
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 8
-      }}>
-        <Icon.Navigation size={18}/> Start walking · {chosen.meta.split(" · ")[0]}
-      </button>
     </>
   );
 }
